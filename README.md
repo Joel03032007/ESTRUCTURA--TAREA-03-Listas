@@ -1,71 +1,65 @@
 # ESTRUCTURA--TAREA-03-Listas
-1. Lista simplemente enlazada circular
+# Descripción de los 5 Ejercicios
 
-Este ejercicio implementa una lista enlazada circular, donde los elementos están conectados mediante nodos y el último nodo apunta nuevamente al primero. El programa permite insertar elementos al inicio y al final, mostrar todos los elementos, comprobar si la lista está vacía y contar cuántos elementos contiene.
+## Ejercicio 1 — Lista Simplemente Enlazada Circular
 
-Métodos principales:
+Este ejercicio implementa la estructura base sobre la cual se construyen los cuatro ejercicios siguientes: una lista enlazada donde, en lugar de que el último nodo apunte a `null` como en una lista lineal, apunta de vuelta al primer nodo, formando un ciclo cerrado. La clase `ListaCircular` administra internamente objetos `Nodo` (cada uno con un dato entero y una referencia `siguiente`), y mantiene tres variables de control: `cabeza` (primer nodo), `cola` (último nodo) y `contador` (cantidad de elementos).
 
-insertarInicio(): agrega un elemento al comienzo.
-insertarFinal(): agrega un elemento al final.
-mostrar(): recorre y muestra todos los elementos.
-estaVacia(): verifica si existen elementos.
-contar(): devuelve el número de nodos.
+**Métodos principales:**
+- `insertarAlInicio(dato)`: crea un nuevo nodo y lo convierte en la nueva cabeza. Si la lista está vacía, el nodo se enlaza consigo mismo; si no, se reconecta `cola.siguiente` hacia la nueva cabeza para no romper el círculo.
+- `insertarAlFinal(dato)`: similar, pero el nuevo nodo se coloca después de la cola actual, y luego se convierte en la nueva cola, cerrando el círculo hacia `cabeza`.
+- `mostrar()`: recorre la lista con un ciclo `do-while` que se detiene al volver a `cabeza` (no al llegar a `null`, porque en esta estructura nunca existe un `null` entre los nodos).
+- `estaVacia()` y `contar()`: consultan el estado de la lista sin modificarla, en tiempo O(1).
 
-La característica circular permite recorrer nuevamente desde el primer elemento después de llegar al último.
+El valor pedagógico central de este ejercicio es entender por qué la conexión `cola.siguiente = cabeza` debe reforzarse en cada inserción: sin ella, la lista dejaría de ser circular.
 
-2. Inserción y eliminación controlada
+---
 
-Este ejercicio trabaja con una lista circular que permite modificar su contenido de manera controlada. El programa puede insertar un elemento en una posición determinada y eliminar elementos tanto por su posición como por su valor. Además, muestra la lista antes y después de cada operación para observar los cambios.
+## Ejercicio 2 — Inserción y Eliminación Controlada
 
-Métodos principales:
+Este ejercicio extiende la lista del ejercicio 1 agregando operaciones indexadas por posición y por valor, además de exigir mostrar el estado de la lista antes y después de cada cambio. La dificultad aumenta porque ahora hay que mantener consistentes `cabeza`, `cola` y el enlace circular sin importar en qué punto de la lista ocurra la operación.
 
-insertarPosicion(): inserta un elemento en una posición específica.
-eliminarPosicion(): elimina el nodo ubicado en una posición.
-eliminarValor(): busca y elimina un elemento por su valor.
-mostrar(): imprime los elementos de la lista.
-estaVacia(): comprueba si la lista no contiene nodos.
+**Métodos principales:**
+- `insertarEnPosicion(dato, pos)`: distingue tres casos — posición 0 (equivale a insertar al inicio), posición igual a `contador` (equivale a insertar al final), y cualquier posición intermedia (recorre hasta el nodo anterior y reenlaza ahí).
+- `eliminarPorPosicion(pos)`: localiza el nodo en esa posición y lo desenlaza. Maneja de forma separada el caso de que la lista quede vacía, el caso de eliminar la cabeza, y el caso general (nodo intermedio o cola).
+- `eliminarPorValor(valor)`: recorre la lista comparando cada dato hasta encontrar la primera coincidencia, usando un contador de vueltas (no una comparación contra `cabeza`) para poder detectar correctamente si el valor buscado está justo en la cabeza.
+- `mostrar()`: se invoca explícitamente antes y después de cada operación para evidenciar el cambio.
 
-También considera diferentes situaciones: lista vacía, lista con un solo nodo y lista con varios nodos, ya que las operaciones pueden comportarse de manera diferente en cada caso.
+Este ejercicio pone a prueba el manejo de los tres escenarios críticos de cualquier lista enlazada: lista vacía, lista de un solo nodo y lista con varios nodos, cada uno con su propia lógica de ajuste de punteros.
 
-3. Simulación de turnos Round-Robin
+---
 
-Este ejercicio utiliza una lista circular para simular la ejecución de procesos mediante el algoritmo Round-Robin. Cada proceso posee un nombre y un tiempo restante de ejecución. El programa utiliza un quantum de 2 unidades, por lo que cada proceso recibe como máximo dos unidades de tiempo antes de pasar al siguiente.
+## Ejercicio 3 — Simulación de Turnos Round-Robin
 
-Métodos principales:
+Aquí la lista circular se aplica a un problema de sistemas operativos: repartir tiempo de CPU entre varios procesos de forma rotativa. Cada proceso se modela como un nodo con `nombre` y `tiempoRestante`. La clase `ListaProcesos` administra el círculo y ejecuta la simulación completa con un quantum fijo de 2 unidades de tiempo por turno.
 
-agregarProceso(): incorpora un nuevo proceso a la lista.
-ejecutarTurno(): ejecuta el proceso actual durante el quantum establecido.
-eliminarProceso(): elimina un proceso cuando termina.
-mostrarProcesos(): muestra el estado actual de la lista.
-estaVacia(): verifica si quedan procesos por ejecutar.
+**Métodos principales:**
+- `agregar(nombre, tiempo)`: inserta un nuevo proceso al final del círculo de procesos.
+- `ejecutarRoundRobin(quantum)`: es el método central. En cada turno, calcula cuánto tiempo real se consume (`Math.min(quantum, tiempoRestante)`), lo resta, y decide el destino del proceso: si terminó (`tiempoRestante <= 0`), se elimina del círculo reconectando el nodo anterior con el siguiente; si no terminó, simplemente se avanza el puntero `actual` al siguiente nodo — y como la lista es circular, ese simple avance ya logra el efecto de "mandarlo al final de la cola" sin mover nada manualmente.
 
-La lista circular es útil porque permite pasar automáticamente de un proceso al siguiente y continuar nuevamente desde el primero.
+Este ejercicio demuestra que la circularidad no solo sirve para "recorrer sin fin", sino también para simular colas rotativas de atención, donde cada elemento recibe turnos sucesivos hasta agotar su tarea.
 
-4. Resolución del problema de Josephus
+---
 
-Este ejercicio implementa el problema de Josephus utilizando una lista circular. Se colocan varias personas formando un círculo y se elimina cada k-ésima persona hasta que solamente queda una. El programa permite realizar diferentes pruebas y mostrar tanto el orden en que las personas son eliminadas como el superviviente final.
+## Ejercicio 4 — Problema de Josephus
 
-Métodos principales:
+Implementa el clásico problema de teoría de la computación: n personas ubicadas en círculo, de las cuales se elimina cada k-ésima hasta que queda una sola (el sobreviviente). La clase `Josephus` arma un círculo de nodos numerados de 1 a n y ejecuta el algoritmo de eliminación.
 
-crearPersonas(): crea los nodos que representan a las personas.
-eliminarCadaK(): realiza las eliminaciones siguiendo el valor de k.
-eliminarNodo(): elimina una persona de la lista.
-mostrar(): muestra las personas que permanecen.
-obtenerSuperviviente(): determina la persona que queda al final.
+**Métodos principales:**
+- `resolver(n, k)`: primero construye el círculo enlazando los n nodos y cerrando el último con el primero. Luego usa dos referencias, `previo` y `actual`, que avanzan juntas k-1 pasos en cada vuelta; al llegar al nodo k-ésimo, se elimina reconectando `previo.siguiente` directamente al nodo que le seguía, y el conteo de la siguiente vuelta se reinicia justo desde ahí. El ciclo se repite mientras `actual.siguiente != actual` (es decir, mientras quede más de una persona).
 
-La lista circular es adecuada porque después de la última persona se continúa automáticamente con la primera, reproduciendo exactamente el comportamiento de las personas ubicadas en un círculo.
+Se probó con los casos n=5, k=2 (orden de eliminación: 2, 4, 1, 5; sobreviviente: 3) y n=7, k=3 (orden: 3, 6, 2, 7, 5, 1; sobreviviente: 4), ambos coincidentes con los resultados conocidos del problema. Este ejercicio ilustra por qué la lista circular es la estructura idónea aquí: el conteo da vueltas indefinidamente sobre un grupo que se reduce, sin necesitar ninguna condición especial para "reiniciar" el recorrido.
 
-5. Sistema de reproducción circular
+---
 
-Este ejercicio representa una playlist musical mediante una lista circular. El programa permite agregar canciones al inicio o al final, mostrar todas las canciones, reproducir la siguiente canción y eliminar canciones mediante su nombre.
+## Ejercicio 5 — Caso Aplicado: Sistema de Reproducción Circular
 
-Métodos principales:
+Este último ejercicio traslada la lista circular a un contexto de software real: una playlist musical. La clase `Playlist` agrega una tercera referencia además de `cabeza` y `cola`: `actual`, que indica qué canción se está reproduciendo en cada momento.
 
-agregarInicio(): agrega una canción al comienzo.
-agregarFinal(): agrega una canción al final.
-mostrarPlaylist(): muestra todas las canciones.
-reproducirSiguiente(): avanza hacia la siguiente canción.
-eliminarCancion(): busca y elimina una canción por su nombre.
-estaVacia(): comprueba si la playlist tiene canciones.
+**Métodos principales:**
+- `agregarAlInicio(cancion)` / `agregarAlFinal(cancion)`: insertan canciones manteniendo el círculo cerrado, igual que en el ejercicio 1.
+- `mostrarPlaylist()`: imprime todas las canciones, marcando entre corchetes la que está sonando actualmente.
+- `reproducirSiguiente()`: avanza `actual` al siguiente nodo. Es el método clave del ejercicio: no contiene ninguna condición especial para "volver al inicio" al llegar a la última canción, porque el círculo ya conecta la cola con la cabeza — el mismo `actual = actual.siguiente` que avanza normalmente es el que produce el reinicio automático.
+- `eliminarPorNombre(cancion)`: busca y desenlaza la canción indicada; si resulta que era la canción que estaba sonando, reasigna `actual` a la siguiente antes de eliminarla, para nunca dejar una referencia inválida.
 
-La principal ventaja de utilizar una lista circular es que cuando se llega a la última canción, el recorrido vuelve automáticamente a la primera, permitiendo una reproducción continua sin necesidad de reiniciar manualmente la playlist.
+Este ejercicio cierra la serie demostrando que la ventaja de la lista circular frente a una lineal —evitar lógica adicional para el reinicio del recorrido— tiene una aplicación directa y tangible en productos de software cotidianos, como cualquier reproductor de música con la opción "repetir lista" activada.
